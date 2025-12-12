@@ -234,7 +234,7 @@ export const FormTextArea = (fieldRenderProps: FieldRenderProps) => {
     const showHint: boolean = !showValidationMessage && hint;
     const hintId: string = showHint ? `${id}_hint` : '';
     const errorId: string = showValidationMessage ? `${id}_error` : '';
-
+   
     return (
         <FieldWrapper>
             <Label editorId={id} editorValid={valid} optional={optional} className="k-form-label">
