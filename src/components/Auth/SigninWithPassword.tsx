@@ -83,7 +83,7 @@ export default function SigninWithPassword() {
         type="password"
         label="Password"
         className="mb-5 [&_input]:py-[15px]"
-        placeholder="Enter your password"
+        placeholder="Enter your password is all set"
         name="password"
         handleChange={handleChange}
         value={data.password}
