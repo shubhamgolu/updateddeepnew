@@ -83,8 +83,20 @@ export default function SigninWithPassword() {
         type="password"
         label="Password"
         className="mb-5 [&_input]:py-[15px]"
-        placeholder="Enter your password is all set"
+        placeholder="Enter your password"
         name="password"
+        handleChange={handleChange}
+        value={data.password}
+        icon={<PasswordIcon />}
+      />
+
+
+      <InputGroup
+        type="checkbox"
+        label="check"
+        className="mb-5 [&_input]:py-[15px]"
+        placeholder="Enter your password"
+        name="check box"
         handleChange={handleChange}
         value={data.password}
         icon={<PasswordIcon />}
