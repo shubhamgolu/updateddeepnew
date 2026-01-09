@@ -2,9 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop, staging]
-  pull_request:
-    branches: [main, develop]
+    branches: [main]
 
 env:
   NODE_VERSION: '20'
@@ -19,10 +17,15 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Setup git for Vercel CLI
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+        
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # IMPORTANT: Get all git history
+          fetch-depth: 0
         
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -89,116 +92,23 @@ jobs:
             package.json
           retention-days: 7
 
-  deploy-preview:
-    name: Deploy Preview
-    needs: quality
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    environment: preview
-    
-    steps:
-      # ADD THIS STEP - Initialize git for Vercel CLI
-      - name: Setup git for Vercel
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git init || true
-          
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          
-      # ADD environment variables to Vercel action
-      - name: Deploy to Vercel Preview
-        uses: amondnet/vercel-action@v25
-        id: vercel-deploy
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--preview'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          github-comment: true
-          
-      - name: Send Slack notification
-        if: success()
-        uses: slackapi/slack-github-action@v1.25.0
-        with:
-          channel-id: 'C09PKH28R4P'
-          slack-message: |
-          
-            Status: ✅ First Msg
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  deploy-staging:
-    name: Deploy to Staging
-    needs: quality
-    if: github.ref == 'refs/heads/staging'
-    runs-on: ubuntu-latest
-    environment: staging
-    
-    steps:
-      # ADD THIS STEP - Initialize git for Vercel CLI
-      - name: Setup git for Vercel
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git init || true
-          
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-output
-          
-      # ADD environment variables to Vercel action
-      - name: Deploy to Vercel Staging
-        uses: amondnet/vercel-action@v25
-        id: vercel-staging
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--target staging'
-          
-      - name: Send Slack notification
-        uses: slackapi/slack-github-action@v1.25.0
-        with:
-          channel-id: 'C09PKH28R4P'
-          slack-message: |
-           
-            Status: ✅ Middle
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
   deploy-production:
     name: Deploy to Production
     needs: quality
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
     
     steps:
-      # ADD THIS STEP - Initialize git for Vercel CLI
       - name: Setup git for Vercel
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git init || true
           
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-output
           
-      # ADD environment variables to Vercel action
       - name: Deploy to Vercel Production
         uses: amondnet/vercel-action@v25
         id: vercel-production
@@ -210,13 +120,13 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod --confirm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Send Slack notification
         uses: slackapi/slack-github-action@v1.25.0
         with:
           channel-id: 'C09PKH28R4P'
           slack-message: |
-          
-            Status: ✅ Last
+            🎉 Msg  Successful!
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
